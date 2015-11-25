@@ -11,21 +11,44 @@
 #include <sys/sysctl.h>
 
 
-int main(int argc, const char * argv[]) {
-    
+@interface Sysctl: NSObject
+
+-(void) print;
+-(void) getParameter: (char*) sp setOut:(NSString*) so;
+
+@end
+
+
+@implementation Sysctl
+{
+    char parameter[256];
+    NSString* printline;
+}
+-(void) print
+{
+    NSLog (printline, parameter);
+}
+-(void) getParameter: (char*) sp setOut:(NSString*) so
+{
+    printline = so;
+    size_t size = sizeof(parameter);
+    sysctlbyname(sp, parameter, &size, NULL, 0);
+    if (!strcmp(parameter, "")) {
+        strcpy(parameter, "unknown");
+    }
+}
+@end
+
+
+int main (int argc, char * argv[])
+{
     @autoreleasepool {
         
-        char str[256];
-        size_t size = sizeof(str);
-        
-        sysctlbyname("kern.osrelease", str, &size, NULL, 0);
-        
-        if (!strcmp(str, "")) {
-            strcpy(str, "unknown");
-        }
-        
-        NSLog(@"\n OS ver. %s \n", str);
+        Sysctl *mySysctl = [[Sysctl alloc] init];
+        [mySysctl getParameter:"kern.osrelease" setOut:@"\n OS ver. %s \n"];
+        [mySysctl print];
 
     }
+    
     return 0;
 }
